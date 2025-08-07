@@ -319,10 +319,12 @@ const Sidebar = () => {
           <div className="flex flex-col items-center">
             {/* Logo */}
             <div className="mb-4 mt-1">
-              <div className="w-9 h-9 bg-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
-              </div>
-            </div>
+  <img
+    src="/images/perplexity.png"
+    alt="Perplexity Logo"
+    className="w-9 h-9 object-contain ml-1"
+  />
+</div>
 
             {/* Add Button */}
             <div className="flex flex-col items-center mb-4">
