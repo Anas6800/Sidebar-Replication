@@ -11,11 +11,11 @@ import './index.css';
 function App() {
   return (
     <PrimeReactProvider>
-      <div className="flex min-h-screen bg-gray-900">
+      <div className="flex min-h-screen bg-gray">
         <Sidebar />
-        
-        {/* Main Content Area - aligned with sidebar */}
-        <div className="flex-1 ml-14"> {/* ml-14 = 56px sidebar width */}
+
+        {/* Main Content Area - centered with respect to sidebar */}
+        <div className="flex-1 ml-1 flex justify-center items-center">
           <Search />
         </div>
       </div>
