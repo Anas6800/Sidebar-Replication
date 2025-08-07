@@ -86,13 +86,12 @@ const Search = () => {
     }
   };
 
-  const tooltipOptionsTop = { position: 'top' };
-
   return (
-    <div className="flex min-h-screen bg-gray justify-center items-center">
-      <div className="mb-16">
-        <h1 className="text-6xl text-center text-white font-medium mb-6">perplexity</h1>
-        <Card className="bg-[#1E1E1E] rounded-xl shadow-md p-0 w-[40rem] h-[8.5rem]">
+    <div className="flex min-h-screen bg-gray justify-center items-center max-md:items-start max-md:pt-8 max-md:px-4 overflow-x-hidden">
+      <div className="mb-16 w-full max-w-[40rem] max-md:mb-6">
+        <h1 className="text-6xl text-center text-white font-medium mb-6 max-md:text-4xl">perplexity</h1>
+        
+        <Card className="bg-[#1E1E1E] rounded-xl shadow-md p-0 w-[40rem] h-[8.5rem] max-md:w-full max-md:h-auto">
           <div className="w-full">
             <InputText
               value={searchQuery}
@@ -110,8 +109,8 @@ const Search = () => {
             onChange={handleFileChange}
           />
 
-          <div className="flex justify-between mt-3 px-1 text-gray-400 relative -top-4">
-            <div className="flex bg-[#181818] rounded-md overflow-hidden">
+          <div className="flex justify-between mt-3 px-1 text-gray-400 relative -top-4 max-md:flex-col max-md:gap-2">
+            <div className="flex bg-[#181818] rounded-md overflow-hidden max-md:justify-center">
               {[
                 { id: 'search', icon: 'pi-search', tooltip: 'Search' },
                 { id: 'qrcode', icon: 'pi-refresh', tooltip: 'Refresh' },
@@ -134,7 +133,7 @@ const Search = () => {
               ))}
             </div>
 
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-1 items-center max-md:flex-wrap max-md:justify-center">
               <div className="relative flex flex-col items-center">
                 <div
                   className="px-3 py-1 text-base cursor-pointer rounded-md bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center gap-2 icon-microchip"
@@ -187,15 +186,15 @@ const Search = () => {
           </div>
         </Card>
 
-        {/* Tooltip components with position 'top' */}
+        {/* Tooltip components */}
         <Tooltip target=".icon-search" position="top" />
-<Tooltip target=".icon-qrcode" position="top" />
-<Tooltip target=".icon-lightbulb" position="top" />
-<Tooltip target=".icon-microchip" position="top" />
-<Tooltip target=".icon-globe" position="top" />
-<Tooltip target=".icon-paperclip" position="top" />
-<Tooltip target=".icon-microphone" position="top" />
-<Tooltip target=".icon-share-alt" position="top" />
+        <Tooltip target=".icon-qrcode" position="top" />
+        <Tooltip target=".icon-lightbulb" position="top" />
+        <Tooltip target=".icon-microchip" position="top" />
+        <Tooltip target=".icon-globe" position="top" />
+        <Tooltip target=".icon-paperclip" position="top" />
+        <Tooltip target=".icon-microphone" position="top" />
+        <Tooltip target=".icon-share-alt" position="top" />
       </div>
     </div>
   );
