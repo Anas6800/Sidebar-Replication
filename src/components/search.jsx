@@ -4,143 +4,30 @@ import { InputText } from 'primereact/inputtext';
 import { Card } from 'primereact/card';
 import { Tooltip } from 'primereact/tooltip';
 
-// Gemini optional AI (requires user's own free API key stored locally)
-const getGeminiApiKey = () => {
+const OPENAI_API_KEY = 'your_openai_api_key_here'; // Replace with your actual OpenAI API key
+
+const fetchAIResponse = async (prompt) => {
   try {
-    return localStorage.getItem('gemini_api_key') || '';
-  } catch (e) {
-    return '';
-  }
-};
-
-const setGeminiApiKey = (key) => {
-  try {
-    if (key) localStorage.setItem('gemini_api_key', key);
-  } catch (e) {
-    // ignore
-  }
-};
-
-const ensureGeminiApiKey = async () => {
-  const existing = getGeminiApiKey();
-  if (existing) return existing;
-  // eslint-disable-next-line no-alert
-  const entered = window.prompt('Enter your Google AI Studio (Gemini) API key to enable AI answers:');
-  if (entered && entered.trim()) {
-    setGeminiApiKey(entered.trim());
-    return entered.trim();
-  }
-  return '';
-};
-
-const fetchGeminiAnswer = async (query) => {
-  const apiKey = getGeminiApiKey();
-  if (!apiKey) {
-    return 'Gemini API key not set. Select Gemini and provide a key when prompted.';
-  }
-  try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-    const body = {
-      contents: [
-        { role: 'user', parts: [{ text: query }] },
-      ],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
-    };
-    const { data } = await axios.post(endpoint, body, { headers: { 'Content-Type': 'application/json' }, timeout: 20000 });
-    const text = data && data.candidates && data.candidates[0] && data.candidates[0].content && Array.isArray(data.candidates[0].content.parts)
-      ? data.candidates[0].content.parts.map((p) => p.text).join('\n').trim()
-      : '';
-    return text || 'No response from Gemini. Try refining your question.';
-  } catch (err) {
-    if (err && err.response && (err.response.status === 401 || err.response.status === 403)) {
-      return 'Gemini API key invalid or unauthorized. Update your key and try again.';
-    }
-    return 'Failed to fetch from Gemini. Please try again later.';
-  }
-};
-
-// Llama via Ollama local API (no key required)
-// Requires Ollama running locally and a Llama model pulled, e.g.:
-//   1) Install from https://ollama.com
-//   2) Run: ollama pull llama3.1:8b
-//   3) Ensure the daemon is running (localhost:11434)
-const fetchOllamaAnswer = async (query) => {
-  try {
-    const endpoint = 'http://localhost:11434/api/generate';
-    const body = {
-      model: 'llama3.1:8b',
-      prompt: query,
-      stream: false,
-      options: { temperature: 0.7 }
-    };
-    const { data } = await axios.post(endpoint, body, { headers: { 'Content-Type': 'application/json' }, timeout: 20000 });
-    const text = data && data.response ? String(data.response).trim() : '';
-    return text || 'No response from Llama. Try refining your question.';
-  } catch (err) {
-    return 'Could not reach Ollama at http://localhost:11434. Start Ollama and run "ollama pull llama3.1:8b".';
-  }
-};
-
-// OpenRouter (hosted-friendly; requires user API key)
-// Sign up: https://openrouter.ai/ - add a key, stored locally in the browser
-const getOpenRouterApiKey = () => {
-  try {
-    return localStorage.getItem('openrouter_api_key') || '';
-  } catch (e) {
-    return '';
-  }
-};
-
-const setOpenRouterApiKey = (key) => {
-  try {
-    if (key) localStorage.setItem('openrouter_api_key', key);
-  } catch (e) {
-    // ignore
-  }
-};
-
-const ensureOpenRouterApiKey = async () => {
-  const existing = getOpenRouterApiKey();
-  if (existing) return existing;
-  // eslint-disable-next-line no-alert
-  const entered = window.prompt('Enter your OpenRouter API key to enable hosted AI (recommended):');
-  if (entered && entered.trim()) {
-    setOpenRouterApiKey(entered.trim());
-    return entered.trim();
-  }
-  return '';
-};
-
-const fetchOpenRouterAnswer = async (query) => {
-  const apiKey = getOpenRouterApiKey();
-  if (!apiKey) return 'OpenRouter API key not set. Select Llama 3.1 (OpenRouter) and add your key.';
-  try {
-    const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-    const body = {
-      model: 'meta-llama/llama-3.1-8b-instruct:free',
-      messages: [{ role: 'user', content: query }],
-      temperature: 0.7,
-      max_tokens: 512,
-    };
-    const { data } = await axios.post(endpoint, body, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        // Optional headers improve routing/analytics; safe to omit or customize:
-        'HTTP-Referer': window?.location?.origin || 'http://localhost',
-        'X-Title': 'Perplexity Clone',
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 150,
       },
-      timeout: 20000,
-    });
-    const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
-      ? String(data.choices[0].message.content).trim()
-      : '';
-    return text || 'No response from OpenRouter. Try refining your question.';
-  } catch (err) {
-    if (err && err.response && (err.response.status === 401 || err.response.status === 403)) {
-      return 'OpenRouter API key invalid or unauthorized. Update your key and try again.';
-    }
-    return 'Failed to fetch from OpenRouter. Please try again later.';
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+      }
+    );
+    return response.data.choices[0].message.content;
+  } catch (error) {
+    console.error('OpenAI request error:', error);
+    // Optionally, return a simulated response instead of failure message for testing:
+    // return `Simulated AI response for: "${prompt}"`;
+    return 'Sorry, I could not get a response from the AI service. Please check your API key and network connection.';
   }
 };
 
@@ -148,7 +35,7 @@ const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeIcon, setActiveIcon] = useState(null);
   const [showMicrochipDropdown, setShowMicrochipDropdown] = useState(false);
-  const [selectedMicrochipOption, setSelectedMicrochipOption] = useState('Llama 3.1 (OpenRouter)');
+  const [selectedMicrochipOption, setSelectedMicrochipOption] = useState(null);
   const [aiResponse, setAIResponse] = useState('');
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
@@ -184,13 +71,7 @@ const Search = () => {
     if (!searchQuery.trim()) return;
     setLoading(true);
     setAIResponse('');
-    let response = '';
-    if (selectedMicrochipOption === 'Llama 3.1 (OpenRouter)') {
-      const key = await ensureOpenRouterApiKey();
-      response = key ? await fetchOpenRouterAnswer(searchQuery) : 'Please provide an OpenRouter API key to use hosted AI.';
-    } else {
-      response = 'Only Llama 3.1 is enabled right now. Please select "Llama 3.1 (OpenRouter)" to get an answer.';
-    }
+    const response = await fetchAIResponse(searchQuery);
     setAIResponse(response);
     setLoading(false);
   };
@@ -228,21 +109,11 @@ const Search = () => {
     }
   };
 
-  const microchipOptions = ['Llama 3.1 (OpenRouter)', 'ChatGPT', 'Claude', 'Gemini Ai'];
+  const microchipOptions = ['Claude Ai', 'GPT 4.0', 'Gemini Ai', 'GPT 4.1'];
 
-  const handleMicrochipOptionClick = async (option) => {
+  const handleMicrochipOptionClick = (option) => {
     setSelectedMicrochipOption(option);
     setShowMicrochipDropdown(false);
-    if (option === 'Llama 3.1 (OpenRouter)') {
-      const key = await ensureOpenRouterApiKey();
-      if (!key) {
-        // eslint-disable-next-line no-alert
-        alert('Add your OpenRouter API key to use hosted Llama responses.');
-      }
-    } else {
-      // eslint-disable-next-line no-alert
-      alert('Only Llama 3.1 is enabled right now. Please select Llama 3.1 to use AI answers.');
-    }
   };
 
   const handleFileChange = (e) => {
